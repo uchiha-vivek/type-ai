@@ -3,7 +3,9 @@ import { useCallback, useState } from "react"; // Import necessary hooks from Re
 
 // Function to generate a specified number of lowercase words using faker
 const generateWords = (count: number) => {
-  return faker.lorem.words(count).toLowerCase(); // Generate 'count' number of random words in lowercase
+  var words = faker.word.words(count).toLowerCase(); // Generate 'count' number of random words in lowercase
+  console.log('words: ', words);
+  return words;
 };
 
 // Custom hook for managing dynamically generated words
