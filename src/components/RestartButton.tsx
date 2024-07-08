@@ -1,23 +1,25 @@
 import { useRef } from "react";
 import { MdRefresh } from "react-icons/md";
 
-interface RestartProps {
+const RestartButton = ({
+  onRestart: handleRestart,
+  className = "",
+}: {
   onRestart: () => void;
   className?: string;
-}
-
-const Restart = ({ onRestart: handleRestart, className = "" }: RestartProps) => {
+}) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  function handleClick() {
+  const handleClick = () => {
     buttonRef.current?.blur();
     handleRestart();
-  }
+  };
 
   return (
     <button
+      tabIndex={-1} // to prevent focus
       ref={buttonRef}
-      className={`block rounded px-8 py-4 hover:bg-slate-700/50 ${className}`}
+      className={`block rounded px-8 py-2 hover:bg-slate-700/50  ${className}`}
       onClick={handleClick}
     >
       <MdRefresh className="w-6 h-6" />
@@ -25,4 +27,4 @@ const Restart = ({ onRestart: handleRestart, className = "" }: RestartProps) => 
   );
 };
 
-export default Restart;
+export default RestartButton;
