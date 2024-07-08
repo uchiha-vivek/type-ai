@@ -18,7 +18,7 @@ const useWords = (count: number) => {
   }, [count]); // Recreate callback only if count changes
 
   // Return generated words and update function
-  return { words, updateWords };
+  return { words, updateWords, setWords };
 };
 
 export default useWords;

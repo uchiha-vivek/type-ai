@@ -3,6 +3,7 @@ import { countErrors, debug } from "../utils/helpers";
 import useCountdown from "./useCountdownHook";
 import useTypings from "./useType";
 import useWords from "./useWords";
+import completeWord from "./completeWord"; // Import the completeWord function
 
 export type State = "start" | "run" | "finish";
 
@@ -12,7 +13,7 @@ const COUNTDOWN_SECONDS = 30;
 const useEngine = () => {
   const [state, setState] = useState<State>("start"); // State to manage the current phase of the engine
   const { timeLeft, startCountdown, resetCountdown } = useCountdown(COUNTDOWN_SECONDS); // Hook to manage the countdown timer
-  const { words, updateWords } = useWords(NUMBER_OF_WORDS); // Hook to manage the words
+  const { words, updateWords, setWords } = useWords(NUMBER_OF_WORDS); // Hook to manage the words
   const { cursor, typed, clearTyped, totalTyped, resetTotalTyped } = useTypings(state !== "finish"); // Hook to manage the user's typing
   const [errors, setErrors] = useState(0); // State to track the number of errors
 
@@ -63,6 +64,24 @@ const useEngine = () => {
       clearTyped(); // Clear the typed characters
     }
   }, [clearTyped, areWordsFinished, updateWords, sumErrors]);
+
+  // New effect to handle word regeneration on mistakes
+  useEffect(() => {
+    const handleMistake = async () => {
+      const currentWord = words.split(" ")[Math.floor(cursor / NUMBER_OF_WORDS)];
+      const userTypedWord = typed.split(" ")[Math.floor(cursor / NUMBER_OF_WORDS)];
+      if (currentWord && userTypedWord && userTypedWord !== currentWord) {
+        const newWordPart = await completeWord(userTypedWord);
+        if (newWordPart !== ".") {
+          const newWords = words.split(" ");
+          newWords[Math.floor(cursor / NUMBER_OF_WORDS)] = userTypedWord + newWordPart;
+          setWords(newWords.join(" "));
+        }
+      }
+    };
+
+    handleMistake();
+  }, [typed, cursor, words, setWords]);
 
   // Return the necessary states and functions
   return { state, words, typed, errors, restart, timeLeft, totalTyped };
