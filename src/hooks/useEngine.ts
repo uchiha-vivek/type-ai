@@ -13,7 +13,7 @@ const COUNTDOWN_SECONDS = 30;
 const useEngine = () => {
   const [state, setState] = useState<State>("start"); // State to manage the current phase of the engine
   const { timeLeft, startCountdown, resetCountdown } = useCountdown(COUNTDOWN_SECONDS); // Hook to manage the countdown timer
-  const { words, updateWords, setWords } = useWords(NUMBER_OF_WORDS); // Hook to manage the words
+  const { words, initialWords, setWords } = useWords(NUMBER_OF_WORDS); // Hook to manage the words
   const { cursor, typed, clearTyped, totalTyped, resetTotalTyped } = useTypings(state !== "finish"); // Hook to manage the user's typing
   const [errors, setErrors] = useState(0); // State to track the number of errors
 
@@ -27,9 +27,9 @@ const useEngine = () => {
     resetTotalTyped(); // Reset the total typed characters
     setState("start"); // Set the state to 'start'
     setErrors(0); // Reset the error count
-    updateWords(); // Generate a new set of words
+    setWords(initialWords); // Use the initial words
     clearTyped(); // Clear the typed characters
-  }, [clearTyped, updateWords, resetCountdown, resetTotalTyped]);
+  }, [clearTyped, resetCountdown, resetTotalTyped, setWords, initialWords]);
 
   // Function to calculate and sum errors
   const sumErrors = useCallback(() => {
@@ -60,21 +60,21 @@ const useEngine = () => {
     if (areWordsFinished) {
       debug("words are finished...");
       sumErrors(); // Calculate and sum errors
-      updateWords(); // Generate a new set of words
       clearTyped(); // Clear the typed characters
     }
-  }, [clearTyped, areWordsFinished, updateWords, sumErrors]);
+  }, [clearTyped, areWordsFinished, sumErrors]);
 
   // New effect to handle word regeneration on mistakes
   useEffect(() => {
     const handleMistake = async () => {
-      const currentWord = words.split(" ")[Math.floor(cursor / NUMBER_OF_WORDS)];
-      const userTypedWord = typed.split(" ")[Math.floor(cursor / NUMBER_OF_WORDS)];
+      const currentWordIndex = Math.floor(cursor / NUMBER_OF_WORDS);
+      const currentWord = words.split(" ")[currentWordIndex];
+      const userTypedWord = typed.split(" ")[currentWordIndex];
       if (currentWord && userTypedWord && userTypedWord !== currentWord) {
         const newWordPart = await completeWord(userTypedWord);
         if (newWordPart !== ".") {
           const newWords = words.split(" ");
-          newWords[Math.floor(cursor / NUMBER_OF_WORDS)] = userTypedWord + newWordPart;
+          newWords[currentWordIndex] = userTypedWord + newWordPart;
           setWords(newWords.join(" "));
         }
       }
